@@ -74,7 +74,7 @@ export function HeaderLogo() {
       {/* Menu Section */}
       <div className="flex items-center gap-3">
         <h3 className="text-accent-foreground text-base hidden md:block">
-          Metronic Team
+          Pure Picasso
         </h3>
         <span className="text-sm text-muted-foreground font-medium hidden md:inline">
           /

@@ -33,8 +33,8 @@ export default function Page() {
   const form = useForm<SigninSchemaType>({
     resolver: zodResolver(getSigninSchema()),
     defaultValues: {
-      email: 'demo@kt.com',
-      password: 'demo123',
+      email: 'owner@example.com',
+      password: '123456',
       rememberMe: false,
     },
   });
@@ -76,7 +76,7 @@ export default function Page() {
       >
         <div className="space-y-1.5 pb-3">
           <h1 className="text-2xl font-semibold tracking-tight text-center">
-            Sign in to Metronic
+            Sign in to Pure Picasso
           </h1>
         </div>
 
@@ -85,9 +85,9 @@ export default function Page() {
             <RiErrorWarningFill className="text-primary" />
           </AlertIcon>
           <AlertTitle className="text-accent-foreground">
-            Use <span className="text-mono font-semibold">demo@kt.com</span>{' '}
+            Use <span className="text-mono font-semibold">owner@example.com</span>{' '}
             username and{' '}
-            <span className="text-mono font-semibold">demo123</span> for demo
+            <span className="text-mono font-semibold">123456</span> for demo
             access.
           </AlertTitle>
         </Alert>
