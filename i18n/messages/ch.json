@@ -1,0 +1,9 @@
+{
+  "messages": {
+    "unauthorized": "未经授权的访问。",
+    "system_error": "糟糕！出了点问题，请稍后再试。",
+    "invalid_input": "输入无效。请检查您的数据并重试。",
+    "data_not_found": "未找到请求的数据。",
+    "delete_restricted_error": "无法删除此记录，因为它与其他记录有关联。"
+  }
+}

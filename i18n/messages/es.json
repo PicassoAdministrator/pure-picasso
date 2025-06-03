@@ -1,0 +1,9 @@
+{
+  "messages": {
+    "unauthorized": "Acceso no autorizado.",
+    "system_error": "¡Vaya! Algo no salió según lo planeado. Por favor, inténtelo de nuevo en un momento.",
+    "invalid_input": "Entrada inválida. Por favor, verifique sus datos e inténtelo de nuevo.",
+    "data_not_found": "Datos solicitados no encontrados.",
+    "delete_restricted_error": "No se puede eliminar este registro porque está vinculado a otros registros."
+  }
+}

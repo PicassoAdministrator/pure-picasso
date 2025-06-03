@@ -1,0 +1,9 @@
+{
+  "messages": {
+    "unauthorized": "Unbefugter Zugriff.",
+    "system_error": "Hoppla! Etwas ist nicht wie geplant gelaufen. Bitte versuchen Sie es in einem Moment erneut.",
+    "invalid_input": "Ungültige Eingabe. Bitte überprüfen Sie Ihre Daten und versuchen Sie es erneut.",
+    "data_not_found": "Angeforderte Daten nicht gefunden.",
+    "delete_restricted_error": "Dieser Datensatz kann nicht gelöscht werden, da er mit anderen Datensätzen verknüpft ist."
+  }
+}
