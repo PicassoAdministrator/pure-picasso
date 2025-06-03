@@ -66,13 +66,6 @@ async function main() {
         },
       });
 
-      // Settings
-      tx.setting.create({
-        data: {
-          name: 'Metronic',
-        },
-      });
-
       console.log('Database setup completed!');
     },
     {
