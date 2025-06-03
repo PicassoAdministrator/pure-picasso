@@ -16,39 +16,40 @@ enum UserStatus {
 }
 
 model User {
-  id              BigInt      @id @default(autoincrement())
+  id              String      @id @default(uuid())
   email           String      @unique
   password        String?
   country         String?
   timezone        String?
   name            String?
-  roleId          BigInt
-  status          UserStatus  @default(INACTIVE)
+  roleId          String
+  status          UserStatus  @default(INACTIVE) // Status of the invitation
   createdAt       DateTime    @default(now())
   updatedAt       DateTime    @updatedAt
   lastSignInAt    DateTime?
   emailVerifiedAt DateTime?
   isTrashed       Boolean     @default(false)
   avatar          String?
-  invitedByUserId BigInt?
-  isProtected     Boolean     @default(false)
+  invitedByUserId String?
+  isProtected     Boolean     @default(false) // Prevents deletion/modification
   role            UserRole    @relation(fields: [roleId], references: [id])
   systemLog       SystemLog[]
   accounts        Account[]
   Session         Session[]
 
+  // Indexes for efficient querying
   @@index([invitedByUserId])
   @@index([roleId])
   @@index([status])
 }
 
 model UserRole {
-  id              BigInt               @id @default(autoincrement())
+  id              String               @id @default(uuid())
   slug            String               @unique
   name            String               @unique
   description     String?
   isTrashed       Boolean              @default(false)
-  createdByUserId BigInt?
+  createdByUserId String?
   createdAt       DateTime             @default(now())
   isProtected     Boolean              @default(false)
   isDefault       Boolean              @default(false)
@@ -57,19 +58,19 @@ model UserRole {
 }
 
 model UserPermission {
-  id              BigInt               @id @default(autoincrement())
+  id              String               @id @default(uuid())
   slug            String               @unique
   name            String
   description     String?
-  createdByUserId BigInt?
+  createdByUserId String?
   createdAt       DateTime             @default(now())
   roles           UserRolePermission[]
 }
 
 model UserRolePermission {
-  id           BigInt   @id @default(autoincrement())
-  roleId       BigInt
-  permissionId BigInt
+  id           String   @id @default(uuid())
+  roleId       String
+  permissionId String
   assignedAt   DateTime @default(now())
 
   role       UserRole       @relation(fields: [roleId], references: [id], onDelete: Cascade)
@@ -79,8 +80,8 @@ model UserRolePermission {
 }
 
 model Account {
-  id                BigInt  @id @default(autoincrement())
-  userId            BigInt
+  id                String  @id @default(cuid())
+  userId            String
   type              String
   provider          String
   providerAccountId String
@@ -98,18 +99,26 @@ model Account {
 }
 
 model Session {
-  id           BigInt   @id @default(autoincrement())
+  id           String   @id @default(cuid())
   sessionToken String   @unique
-  userId       BigInt
+  userId       String
   expires      DateTime
   user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
+
 model SystemLog {
-  id          BigInt   @id @default(autoincrement())
-  userId      BigInt
+  id          String   @id @default(uuid())
+  userId      String
   createdAt   DateTime @default(now())
-  entityId    BigInt?
+  entityId    String?
   entityType  String?
   event       String?
   description String?
@@ -119,4 +128,43 @@ model SystemLog {
   user User @relation(fields: [userId], references: [id])
 
   @@index([userId])
+}
+
+model SystemSetting {
+  id             String  @id @default(uuid())
+  name           String  @default("My Company")
+  logo           String?
+  active         Boolean @default(true)
+  address        String?
+  websiteURL     String?
+  supportEmail   String?
+  supportPhone   String?
+  language       String  @default("en")
+  timezone       String  @default("UTC")
+  currency       String  @default("USD")
+  currencyFormat String  @default("$ {value}")
+
+  socialFacebook  String?
+  socialTwitter   String?
+  socialInstagram String?
+  socialLinkedIn  String?
+  socialPinterest String?
+  socialYoutube   String?
+
+  notifyStockEmail               Boolean  @default(true)
+  notifyStockWeb                 Boolean  @default(true)
+  notifyStockThreshold           Int      @default(10)
+  notifyStockRoleIds             String[]
+  notifyNewOrderEmail            Boolean  @default(true)
+  notifyNewOrderWeb              Boolean  @default(true)
+  notifyNewOrderRoleIds          String[]
+  notifyOrderStatusUpdateEmail   Boolean  @default(true)
+  notifyOrderStatusUpdateWeb     Boolean  @default(true)
+  notifyOrderStatusUpdateRoleIds String[]
+  notifyPaymentFailureEmail      Boolean  @default(true)
+  notifyPaymentFailureWeb        Boolean  @default(true)
+  notifyPaymentFailureRoleIds    String[]
+  notifySystemErrorFailureEmail  Boolean  @default(true)
+  notifySystemErrorWeb           Boolean  @default(true)
+  notifySystemErrorRoleIds       String[]
 }

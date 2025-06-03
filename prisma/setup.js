@@ -66,6 +66,9 @@ async function main() {
         },
       });
 
+      // Settings
+
+
       console.log('Database setup completed!');
     },
     {
