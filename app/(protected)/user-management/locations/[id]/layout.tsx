@@ -22,7 +22,7 @@ type Props = {
 };
 
 export default function LocationLayout({ params, children }: Props) {
-  const { id } = params;
+  const { id } = params; // <-- THIS IS CORRECT
   const pathname = usePathname();
   const router = useRouter();
   const [activeTab, setActiveTab] = useState<string>('');
