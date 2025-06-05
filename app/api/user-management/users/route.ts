@@ -1,3 +1,5 @@
+// app/api/user-management/users/route.ts
+
 import { NextRequest, NextResponse } from 'next/server';
 import { Prisma } from '@prisma/client';
 import { getServerSession } from 'next-auth/next';
@@ -10,6 +12,7 @@ import {
 } from '@/app/(protected)/user-management/users/forms/user-add-schema';
 import authOptions from '@/app/api/auth/[...nextauth]/auth-options';
 import { UserStatus } from '@/app/models/user';
+import bcrypt from 'bcrypt';
 
 export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url);
@@ -20,6 +23,8 @@ export async function GET(req: NextRequest) {
   const sortDirection = searchParams.get('dir') === 'desc' ? 'desc' : 'asc';
   const status = searchParams.get('status') || null;
   const roleId = searchParams.get('roleId') || null;
+  const locationId = searchParams.get('locationId') || null;
+
 
   try {
     // Validate user session
@@ -42,6 +47,18 @@ export async function GET(req: NextRequest) {
         AND: [
           ...(statusFilter ? [{ status: statusFilter }] : []), // Add status filter if valid
           ...(roleId && roleId !== 'all' ? [{ roleId }] : []), // Add role filter if valid
+          ...(locationId && locationId !== 'all'
+            ? [
+                {
+                  UserLocation: {
+                    some: {
+                      locationId,
+                      isPrimary: true,
+                    },
+                  },
+                },
+              ]
+            : []),
           {
             OR: [
               { name: { contains: query, mode: 'insensitive' } },
@@ -67,39 +84,43 @@ export async function GET(req: NextRequest) {
     };
 
     // Fetch users with filters
-    const users = await prisma.user.findMany({
-      where: {
-        AND: [
-          ...(statusFilter ? [{ status: statusFilter }] : []), // Add status filter if valid
-          ...(roleId && roleId !== 'all' ? [{ roleId }] : []), // Add role filter if valid
-          {
-            OR: [
-              { name: { contains: query, mode: 'insensitive' } },
-              { email: { contains: query, mode: 'insensitive' } },
-            ],
-          },
-        ],
-      },
-      skip: (page - 1) * limit,
-      take: limit,
-      orderBy,
-      select: {
-        id: true,
-        isTrashed: true,
-        avatar: true,
-        name: true,
-        email: true,
-        status: true,
-        createdAt: true,
-        lastSignInAt: true,
-        role: {
-          select: {
-            id: true,
-            name: true,
-          },
+   const users = await prisma.user.findMany({
+    where: {
+      AND: [
+        ...(statusFilter ? [{ status: statusFilter }] : []),
+        ...(roleId && roleId !== 'all' ? [{ roleId }] : []),
+        {
+          OR: [
+            { name: { contains: query, mode: 'insensitive' } },
+            { email: { contains: query, mode: 'insensitive' } },
+          ],
         },
+      ],
+    },
+    skip: (page - 1) * limit,
+    take: limit,
+    orderBy,
+    select: {
+      id: true,
+      isTrashed: true,
+      avatar: true,
+      name: true,
+      email: true,
+      status: true,
+      createdAt: true,
+      lastSignInAt: true,
+      role: { select: { id: true, name: true } },
+      // --- Add this block:
+      UserLocation: {
+        select: {
+          isPrimary: true,
+          location: { select: { id: true, name: true } },
+        },
+        where: { isPrimary: true },
+        take: 1,
       },
-    });
+    },
+  });
 
     return NextResponse.json({
       data: users,
@@ -119,13 +140,12 @@ export async function GET(req: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
-    // Validate user session
     const session = await getServerSession(authOptions);
 
     if (!session) {
       return NextResponse.json(
         { message: 'Unauthorized request' },
-        { status: 401 }, // Unauthorized
+        { status: 401 }
       );
     }
 
@@ -136,52 +156,58 @@ export async function POST(request: NextRequest) {
     if (!parsedData.success) {
       return NextResponse.json(
         { error: 'Invalid input.' },
-        { status: 400 }, // Bad request
+        { status: 400 }
       );
     }
 
-    const { name, email, roleId }: UserAddSchemaType = parsedData.data;
+    const { name, email, password, roleId, primaryLocationId }: UserAddSchemaType = parsedData.data;
 
     // Check if the email already exists
-    const existingUser = await prisma.user.findUnique({
-      where: { email },
-    });
-
+    const existingUser = await prisma.user.findUnique({ where: { email } });
     if (existingUser) {
       return NextResponse.json(
         { message: 'Email is already registered.' },
-        { status: 409 }, // Conflict
+        { status: 409 }
       );
     }
 
-    // Check if the role exists
-    const existingRole = await prisma.userRole.findUnique({
-      where: { id: roleId },
-    });
-
+    const existingRole = await prisma.userRole.findUnique({ where: { id: roleId } });
     if (!existingRole) {
       return NextResponse.json(
-        {
-          message:
-            'Selected role does not exist. Someone might have deleted it already.',
-        },
-        { status: 404 }, // Not found
+        { message: 'Selected role does not exist. Someone might have deleted it already.' },
+        { status: 404 }
       );
     }
 
-    // Use a transaction to insert multiple records atomically
+    // Hash password!
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    // Transaction for user and UserLocation
     const result = await prisma.$transaction(async (tx) => {
-      // Create a user
+      // Create user
       const user = await tx.user.create({
         data: {
           name,
           email,
+          password: hashedPassword,
           status: UserStatus.ACTIVE,
           roleId,
         },
       });
 
-      // Log the event
+      // Create UserLocation if provided
+      if (primaryLocationId) {
+        await tx.userLocation.create({
+          data: {
+            userId: user.id,
+            locationId: primaryLocationId,
+            isPrimary: true,
+            roleId, // or whatever logic you want for user-location role
+          },
+        });
+      }
+
+      // Log event
       await systemLog(
         {
           event: 'create',
@@ -191,23 +217,20 @@ export async function POST(request: NextRequest) {
           description: 'User added by user.',
           ipAddress: clientIp,
         },
-        tx,
+        tx
       );
 
       return user;
     });
 
     return NextResponse.json(
-      {
-        message: 'User successfully added.',
-        user: result,
-      },
-      { status: 200 },
+      { message: 'User successfully added.', user: result },
+      { status: 200 }
     );
-  } catch {
+  } catch (err) {
     return NextResponse.json(
       { message: 'Oops! Something went wrong. Please try again in a moment.' },
-      { status: 500 },
+      { status: 500 }
     );
   }
 }

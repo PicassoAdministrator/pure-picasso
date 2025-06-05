@@ -33,7 +33,7 @@ export function NavbarMenu() {
   } else if (pathname.includes('/user-management/')) {
     navbarMenu = MENU_SIDEBAR?.[7];
   } else {
-    navbarMenu = MENU_SIDEBAR?.[3];
+    navbarMenu = MENU_SIDEBAR?.[0];
   }
 
   const { isActive, hasActiveChild } = useMenu(pathname);

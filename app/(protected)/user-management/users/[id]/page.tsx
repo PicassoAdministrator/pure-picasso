@@ -1,3 +1,5 @@
+// app/(protected)/user-management/users/[id]/page.tsx
+
 'use client';
 
 import { useUser } from './components/user-context';

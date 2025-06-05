@@ -1,3 +1,5 @@
+// app/(protected)/user-management/users/[id]/components/user-context.tsx
+
 'use client';
 
 import { createContext, ReactNode, useContext } from 'react';

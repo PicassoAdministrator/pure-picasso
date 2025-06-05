@@ -28,6 +28,13 @@ const authOptions: NextAuthOptions = {
 
         const user = await prisma.user.findUnique({
           where: { email: credentials.email },
+          include: {
+            UserLocation: {
+              include: {
+                location: true,
+              },
+            },
+          },
         });
 
         if (!user) {
@@ -75,6 +82,7 @@ const authOptions: NextAuthOptions = {
           name: user.name || 'Anonymous',
           roleId: user.roleId,
           avatar: user.avatar,
+          userLocations: user.UserLocation,
         };
       },
     }),
@@ -183,23 +191,47 @@ const authOptions: NextAuthOptions = {
           token.status = user.status;
           token.roleId = user.roleId;
           token.roleName = role?.name;
+          token.userLocations = user.userLocations; 
         }
       }
 
       return token;
     },
-    async session({ session, token }: { session: Session; token: JWT }) {
-      if (session.user) {
-        session.user.id = token.id;
-        session.user.email = token.email;
-        session.user.name = token.name;
-        session.user.avatar = token.avatar;
-        session.user.status = token.status;
-        session.user.roleId = token.roleId;
-        session.user.roleName = token.roleName;
-      }
-      return session;
-    },
+    async session({ session, token }) {
+    if (session.user && token.id) {
+      // Fetch fresh user + locations from DB
+      const user = await prisma.user.findUnique({
+        where: { id: token.id as string },
+        include: {
+          UserLocation: {
+            include: { location: true },
+          },
+        },
+      });
+
+      session.user.id = user?.id ?? '';
+      session.user.name = user?.name ?? '';
+      session.user.email = user?.email ?? '';
+      session.user.avatar = user?.avatar ?? '';
+      session.user.roleId = user?.roleId ?? '';
+      session.user.roleName = token.roleName ?? '';
+      session.user.status = user?.status ?? '';
+
+      // Make sure to provide all assigned locations, with isCurrent/isPrimary
+      session.user.userLocations =
+        user?.UserLocation.map((ul) => ({
+          id: ul.id, // <-- add this line!
+          location: {
+            id: ul.location.id,
+            name: ul.location.name,
+          },
+          isPrimary: ul.isPrimary,
+          isCurrent: ul.isCurrent,
+        })) ?? [];
+
+    }
+    return session;
+  },
   },
   pages: {
     signIn: '/signin',

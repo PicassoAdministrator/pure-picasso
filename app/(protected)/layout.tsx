@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { useSession } from 'next-auth/react';
 import { ScreenLoader } from '@/components/common/screen-loader';
 import { Demo3Layout } from '../components/layouts/demo3/layout';
+import { LocationProvider } from '@/app/context/location-context'; // <-- import it
 
 export default function ProtectedLayout({
   children,
@@ -24,5 +25,10 @@ export default function ProtectedLayout({
     return <ScreenLoader />;
   }
 
-  return session ? <Demo3Layout>{children}</Demo3Layout> : null;
+  // Wrap your main layout with LocationProvider
+  return session ? (
+    <LocationProvider>
+      <Demo3Layout>{children}</Demo3Layout>
+    </LocationProvider>
+  ) : null;
 }

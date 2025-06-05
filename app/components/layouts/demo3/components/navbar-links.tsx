@@ -11,6 +11,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from '@/components/ui/popover';
+import { LocationPicker } from './location-picker';
 
 export function NavbarLinks() {
   const [date, setDate] = useState<DateRange | undefined>({
@@ -20,7 +21,8 @@ export function NavbarLinks() {
 
   return (
     <div className="flex items-center">
-      <Popover>
+      <LocationPicker/>
+      {/* <Popover>
         <PopoverTrigger asChild>
           <Button id="date" variant="outline" mode="input">
             <CalendarDays />
@@ -47,7 +49,7 @@ export function NavbarLinks() {
             numberOfMonths={2}
           />
         </PopoverContent>
-      </Popover>
+      </Popover> */}
     </div>
   );
 }

@@ -26,6 +26,10 @@ export interface User {
   role: UserRole;
   sessions?: Session[];
   accounts?: Account[];
+  UserLocation?: Array<{
+    isPrimary: boolean;
+    location: { id: string; name: string };
+  }>;
 }
 
 export interface UserRole {

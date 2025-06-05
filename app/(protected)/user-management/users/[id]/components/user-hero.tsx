@@ -1,3 +1,5 @@
+// app/(protected)/user-management/users/[id]/components/user-hero.tsx
+
 'use client';
 
 import { useState } from 'react';

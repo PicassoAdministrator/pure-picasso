@@ -1,9 +1,11 @@
+// app/(protected)/user-management/users/[id]/components/user-profile-edit-dialog.tsx
+
 'use client';
 
 import { useEffect } from 'react';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { RiCheckboxCircleFill, RiErrorWarningFill } from '@remixicon/react';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useForm } from 'react-hook-form';
 import { toast } from 'sonner';
 import { apiFetch } from '@/lib/api';
@@ -54,12 +56,17 @@ const UserProfileEditDialog = ({
 }: {
   open: boolean;
   closeDialog: () => void;
-  user: User;
+  user?: User; // <-- make user optional!
 }) => {
+  if (!user) return null;
   const queryClient = useQueryClient();
 
   // Fetch available roles
   const { data: roleList } = useRoleSelectQuery();
+
+  // Defensive: Only try to access UserLocation if user is defined
+  const userPrimaryLocationId =
+    user?.UserLocation?.find((ul) => ul.isPrimary)?.location?.id || '';
 
   const form = useForm<UserProfileSchemaType>({
     resolver: zodResolver(UserProfileSchema),
@@ -67,16 +74,19 @@ const UserProfileEditDialog = ({
       name: user?.name || '',
       roleId: user?.roleId || '',
       status: user?.status || '',
+      primaryLocationId: userPrimaryLocationId,
     },
     mode: 'onSubmit',
   });
 
   useEffect(() => {
-    if (open) {
+    if (open && user) {
       form.reset({
-        name: user?.name || '',
-        roleId: user?.roleId || '',
-        status: user?.status || '',
+        name: user.name || '',
+        roleId: user.roleId || '',
+        status: user.status || '',
+        primaryLocationId:
+          user.UserLocation?.find((ul) => ul.isPrimary)?.location?.id || '',
       });
     }
   }, [open, user, form]);
@@ -139,8 +149,24 @@ const UserProfileEditDialog = ({
   const isProcessing = mutation.status === 'pending';
 
   const handleSubmit = (values: UserProfileSchemaType) => {
-    mutation.mutate(values);
+    const payload = {
+      ...values,
+      primaryLocationId: values.primaryLocationId === 'none' ? null : values.primaryLocationId,
+    };
+    mutation.mutate(payload);
   };
+
+  const { data: locations = [] } = useQuery({
+    queryKey: ['locations', 'all'],
+    queryFn: async () => {
+      const res = await apiFetch('/api/user-management/locations?limit=1000');
+      if (!res.ok) return [];
+      const json = await res.json();
+      return json.data;
+    },
+    enabled: open,
+  });
+
 
   return (
     <Dialog open={open} onOpenChange={closeDialog}>
@@ -193,6 +219,35 @@ const UserProfileEditDialog = ({
                             </SelectItem>
                           ))}
                         </SelectGroup>
+                      </SelectContent>
+                    </Select>
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="primaryLocationId"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Primary Location</FormLabel>
+                  <FormControl>
+                    <Select
+                      onValueChange={(val) => field.onChange(val === 'none' ? '' : val)}
+                      value={field.value || 'none'}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select a primary location" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {/* Use 'none' instead of empty string */}
+                        <SelectItem value="none">None assigned</SelectItem>
+                        {locations.map((loc: any) => (
+                          <SelectItem key={loc.id} value={loc.id}>
+                            {loc.name}
+                          </SelectItem>
+                        ))}
                       </SelectContent>
                     </Select>
                   </FormControl>

@@ -16,26 +16,27 @@ enum UserStatus {
 }
 
 model User {
-  id              String      @id @default(uuid())
-  email           String      @unique
+  id              String         @id @default(uuid())
+  email           String         @unique
   password        String?
   country         String?
   timezone        String?
   name            String?
   roleId          String
-  status          UserStatus  @default(INACTIVE) // Status of the invitation
-  createdAt       DateTime    @default(now())
-  updatedAt       DateTime    @updatedAt
+  status          UserStatus     @default(INACTIVE) // Status of the invitation
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
   lastSignInAt    DateTime?
   emailVerifiedAt DateTime?
-  isTrashed       Boolean     @default(false)
+  isTrashed       Boolean        @default(false)
   avatar          String?
   invitedByUserId String?
-  isProtected     Boolean     @default(false) // Prevents deletion/modification
-  role            UserRole    @relation(fields: [roleId], references: [id])
+  isProtected     Boolean        @default(false) // Prevents deletion/modification
+  role            UserRole       @relation(fields: [roleId], references: [id])
   systemLog       SystemLog[]
   accounts        Account[]
   Session         Session[]
+  UserLocation    UserLocation[]
 
   // Indexes for efficient querying
   @@index([invitedByUserId])
@@ -44,17 +45,21 @@ model User {
 }
 
 model UserRole {
-  id              String               @id @default(uuid())
-  slug            String               @unique
-  name            String               @unique
+  id              String   @id @default(uuid())
+  slug            String   @unique
+  name            String   @unique
   description     String?
-  isTrashed       Boolean              @default(false)
+  isTrashed       Boolean  @default(false)
   createdByUserId String?
-  createdAt       DateTime             @default(now())
-  isProtected     Boolean              @default(false)
-  isDefault       Boolean              @default(false)
-  users           User[]
-  permissions     UserRolePermission[]
+  createdAt       DateTime @default(now())
+  isProtected     Boolean  @default(false)
+  isDefault       Boolean  @default(false)
+
+  users             User[]
+  permissions       UserRolePermission[]
+  locations         UserLocation[]
+  primaryLocationId String?
+  currentLocationId String?
 }
 
 model UserPermission {
@@ -167,4 +172,33 @@ model SystemSetting {
   notifySystemErrorFailureEmail  Boolean  @default(true)
   notifySystemErrorWeb           Boolean  @default(true)
   notifySystemErrorRoleIds       String[]
+}
+
+model Location {
+  id          String  @id @default(uuid())
+  name        String
+  isTrashed   Boolean @default(false)
+  isProtected Boolean @default(false) // Prevents deletion/modification
+
+  parentId String? // nullable for top-level locations
+  parent   Location?      @relation("LocationToChildren", fields: [parentId], references: [id])
+  children Location[]     @relation("LocationToChildren")
+  users    UserLocation[] // join table for users/roles
+}
+
+model UserLocation {
+  id         String  @id @default(uuid())
+  userId     String
+  locationId String
+  roleId     String
+  isPrimary  Boolean @default(false)
+  isCurrent  Boolean @default(false)
+
+  user     User     @relation(fields: [userId], references: [id])
+  location Location @relation(fields: [locationId], references: [id])
+  role     UserRole @relation(fields: [roleId], references: [id])
+
+  @@unique([userId, locationId])
+  @@index([locationId])
+  @@index([roleId])
 }

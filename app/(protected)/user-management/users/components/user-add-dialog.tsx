@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { RiCheckboxCircleFill, RiErrorWarningFill } from '@remixicon/react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
@@ -48,32 +49,41 @@ const UserAddDialog = ({
 }) => {
   const queryClient = useQueryClient();
 
-  // Fetch available roles
   const { data: roleList } = useRoleSelectQuery();
+
+  // Fetch locations for the select
+  const { data: locations = [] } = useQuery({
+    queryKey: ['locations', 'all'],
+    queryFn: async () => {
+      const res = await apiFetch('/api/user-management/locations?limit=1000');
+      if (!res.ok) return [];
+      const json = await res.json();
+      return json.data;
+    },
+    enabled: open,
+  });
 
   const form = useForm<UserAddSchemaType>({
     resolver: zodResolver(UserAddSchema),
     defaultValues: {
       name: '',
       email: '',
+      password: '',
       roleId: '',
+      primaryLocationId: '',
     },
     mode: 'onSubmit',
   });
 
   useEffect(() => {
-    if (open) {
-      form.reset();
-    }
+    if (open) form.reset();
   }, [open, form]);
 
   const mutation = useMutation({
     mutationFn: async (values: UserAddSchemaType) => {
       const response = await apiFetch('/api/user-management/users', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(values),
       });
 
@@ -85,19 +95,16 @@ const UserAddDialog = ({
       return response.json();
     },
     onSuccess: () => {
-      const message = 'User added successfully';
       toast.custom(
         () => (
           <Alert variant="mono" icon="success" close={false}>
             <AlertIcon>
               <RiCheckboxCircleFill />
             </AlertIcon>
-            <AlertTitle>{message}</AlertTitle>
+            <AlertTitle>User added successfully</AlertTitle>
           </Alert>
         ),
-        {
-          position: 'top-center',
-        },
+        { position: 'top-center' },
       );
 
       queryClient.invalidateQueries({ queryKey: ['user-users'] });
@@ -113,9 +120,7 @@ const UserAddDialog = ({
             <AlertTitle>{error.message}</AlertTitle>
           </Alert>
         ),
-        {
-          position: 'top-center',
-        },
+        { position: 'top-center' },
       );
     },
   });
@@ -163,13 +168,26 @@ const UserAddDialog = ({
               />
               <FormField
                 control={form.control}
+                name="password"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Password</FormLabel>
+                    <FormControl>
+                      <Input placeholder="Enter password" type="password" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
                 name="roleId"
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Role</FormLabel>
                     <FormControl>
                       <Select
-                        onValueChange={(value) => field.onChange(value)}
+                        onValueChange={field.onChange}
                         defaultValue={field.value}
                       >
                         <SelectTrigger>
@@ -180,6 +198,39 @@ const UserAddDialog = ({
                             {roleList?.map((role: UserRole) => (
                               <SelectItem key={role.id} value={role.id}>
                                 {role.name}
+                              </SelectItem>
+                            ))}
+                          </SelectGroup>
+                        </SelectContent>
+                      </Select>
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="primaryLocationId"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Primary Location</FormLabel>
+                    <FormControl>
+                      <Select
+                        onValueChange={(value) => {
+                          // if '_none', clear value
+                          field.onChange(value === '_none' ? undefined : value)
+                        }}
+                        value={field.value ?? '_none'}
+                      >
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select a primary location" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectGroup>
+                            <SelectItem value="_none">None assigned</SelectItem>
+                            {locations.map((loc: any) => (
+                              <SelectItem key={loc.id} value={loc.id}>
+                                {loc.name}
                               </SelectItem>
                             ))}
                           </SelectGroup>

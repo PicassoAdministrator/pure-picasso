@@ -57,6 +57,8 @@ const UserList = () => {
 
   // Role select query
   const { data: roleList } = useRoleSelectQuery();
+  const [selectedLocation, setSelectedLocation] = useState<string | null>('all');
+
 
   // Fetch users from the server API
   const fetchUsers = async ({
@@ -66,9 +68,11 @@ const UserList = () => {
     searchQuery,
     selectedRole,
     selectedStatus,
+    selectedLocation,
   }: DataGridApiFetchParams & {
     selectedRole: string | null;
     selectedStatus: string | null;
+    selectedLocation?: string | null;
   }): Promise<DataGridApiResponse<User>> => {
     const sortField = sorting?.[0]?.id || '';
     const sortDirection = sorting?.[0]?.desc ? 'desc' : 'asc';
@@ -78,12 +82,9 @@ const UserList = () => {
       limit: String(pageSize),
       ...(sortField ? { sort: sortField, dir: sortDirection } : {}),
       ...(searchQuery ? { query: searchQuery } : {}),
-      ...(selectedRole && selectedRole !== 'all'
-        ? { roleId: selectedRole }
-        : {}),
-      ...(selectedStatus && selectedStatus !== 'all'
-        ? { status: selectedStatus }
-        : {}),
+      ...(selectedRole && selectedRole !== 'all' ? { roleId: selectedRole } : {}),
+      ...(selectedStatus && selectedStatus !== 'all' ? { status: selectedStatus } : {}),
+      ...(selectedLocation && selectedLocation !== 'all' ? { locationId: selectedLocation } : {}),
     });
 
     const response = await apiFetch(
@@ -108,6 +109,7 @@ const UserList = () => {
       searchQuery,
       selectedRole,
       selectedStatus,
+      selectedLocation,
     ],
     queryFn: () =>
       fetchUsers({
@@ -117,12 +119,26 @@ const UserList = () => {
         searchQuery,
         selectedRole,
         selectedStatus,
+        selectedLocation,
       }),
     staleTime: Infinity,
     gcTime: 1000 * 60 * 60, // 60 minutes
     refetchOnWindowFocus: false,
     refetchOnReconnect: false,
     retry: 1,
+  });
+
+  // Fetch locations for the filter dropdown
+  const { data: locations } = useQuery({
+    queryKey: ['locations', 'all'],
+    queryFn: async () => {
+      const res = await apiFetch('/api/user-management/locations?limit=1000');
+      if (!res.ok) return [];
+      const json = await res.json();
+      return json.data;
+    },
+    staleTime: Infinity,
+    gcTime: 1000 * 60 * 60,
   });
 
   const handleRoleSelection = (roleId: string) => {
@@ -216,6 +232,28 @@ const UserList = () => {
           skeleton: <Skeleton className="w-28 h-7" />,
         },
         enableSorting: true,
+        enableHiding: true,
+      },
+      {
+        accessorKey: 'UserLocation',
+        id: 'primaryLocation',
+        header: ({ column }) => (
+          <DataGridColumnHeader title="Primary Location" visibility={true} column={column} />
+        ),
+        cell: ({ row }) => {
+          const loc = row.original.UserLocation?.[0]?.location;
+          return loc ? (
+            <span>{loc.name}</span>
+          ) : (
+            <span className="text-muted-foreground">None</span>
+          );
+        },
+        size: 180,
+        meta: {
+          headerTitle: 'Primary Location',
+          skeleton: <Skeleton className="h-4 w-32" />,
+        },
+        enableSorting: false,
         enableHiding: true,
       },
       {
@@ -388,6 +426,27 @@ const UserList = () => {
               {roleList?.map((role: User) => (
                 <SelectItem key={role.id} value={role.id}>
                   {role.name}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          <Select
+            onValueChange={(value) => {
+              setSelectedLocation(value);
+              setPagination({ ...pagination, pageIndex: 0 });
+            }}
+            value={selectedLocation || 'all'}
+            defaultValue="all"
+            disabled={isLoading}
+          >
+            <SelectTrigger className="w-full sm:w-44">
+              <SelectValue placeholder="Filter by location" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All locations</SelectItem>
+              {locations?.map((loc: any) => (
+                <SelectItem key={loc.id} value={loc.id}>
+                  {loc.name}
                 </SelectItem>
               ))}
             </SelectContent>

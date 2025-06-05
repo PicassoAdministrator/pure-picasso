@@ -37,6 +37,10 @@ export default async function Page() {
                 <BreadcrumbItem>
                   <BreadcrumbPage>User Management</BreadcrumbPage>
                 </BreadcrumbItem>
+                <BreadcrumbSeparator />
+                <BreadcrumbItem>
+                  <BreadcrumbPage>Users</BreadcrumbPage>
+                </BreadcrumbItem>
               </BreadcrumbList>
             </Breadcrumb>
           </ToolbarHeading>

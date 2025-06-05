@@ -10,6 +10,7 @@ export const UserProfileSchema = z.object({
   status: z.string().nonempty({
     message: 'Status is required.',
   }),
+  primaryLocationId: z.string().nullable().optional(),
 });
 
 export type UserProfileSchemaType = z.infer<typeof UserProfileSchema>;

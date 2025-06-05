@@ -1,3 +1,5 @@
+// app/(protected)/user-management/users/[id]/components/user-danger-zone.tsx
+
 'use client';
 
 import { useState } from 'react';

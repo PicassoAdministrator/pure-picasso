@@ -1,3 +1,5 @@
+// app/(protected)/user-management/users/[id]/components/user-restore-dialog.tsx
+
 'use client';
 
 import { zodResolver } from '@hookform/resolvers/zod';

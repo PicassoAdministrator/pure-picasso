@@ -26,6 +26,7 @@ import {
   Grid,
   Heart,
   HelpCircle,
+  HouseIcon,
   Kanban,
   Key,
   Layout,
@@ -59,7 +60,7 @@ export const MENU_SIDEBAR: MenuConfig = [
     title: 'Dashboards',
     icon: LayoutGrid,
     children: [
-      { title: 'Light Sidebar', path: '/' },
+      { title: 'Home', path: '/' },
       { title: 'Dark Sidebar', path: '/dark-sidebar' },
     ],
   },
@@ -284,6 +285,10 @@ export const MENU_SIDEBAR: MenuConfig = [
       {
         title: 'Users',
         path: '/user-management/users',
+      },
+      {
+        title: 'Locations',
+        path: '/user-management/locations',
       },
       {
         title: 'Roles',
@@ -1519,6 +1524,13 @@ export const MENU_HELP: MenuConfig = [
 ];
 
 export const MENU_ROOT: MenuConfig = [
+  {
+    title: 'Dashboard',
+    icon: HouseIcon,
+    rootPath: '/',
+    path: '/',
+    childrenIndex: 0,
+  },
   {
     title: 'Public Profile',
     icon: UserCircle,

@@ -33,7 +33,7 @@ export default function Page() {
   const form = useForm<SigninSchemaType>({
     resolver: zodResolver(getSigninSchema()),
     defaultValues: {
-      email: 'owner@example.com',
+      email: 'owner@user.com',
       password: '123456',
       rememberMe: false,
     },
@@ -85,7 +85,7 @@ export default function Page() {
             <RiErrorWarningFill className="text-primary" />
           </AlertIcon>
           <AlertTitle className="text-accent-foreground">
-            Use <span className="text-mono font-semibold">owner@example.com</span>{' '}
+            Use <span className="text-mono font-semibold">owner@user.com</span>{' '}
             username and{' '}
             <span className="text-mono font-semibold">123456</span> for demo
             access.

@@ -1,3 +1,5 @@
+// app/(protected)/user-management/users/[id]/layout.tsx
+
 'use client';
 
 import React, { use, useEffect, useMemo, useState } from 'react';
@@ -122,11 +124,13 @@ export default function UserLayout({
                 </BreadcrumbItem>
                 <BreadcrumbSeparator />
                 <BreadcrumbItem>
-                  <BreadcrumbPage>User Management</BreadcrumbPage>
+                  <BreadcrumbLink href="/user-management/users">Users</BreadcrumbLink>
                 </BreadcrumbItem>
                 <BreadcrumbSeparator />
                 <BreadcrumbItem>
-                  <BreadcrumbLink href="/user/users">Users</BreadcrumbLink>
+                  <BreadcrumbPage>
+                    {user?.name ?? (isLoading ? 'Loading...' : 'User')}
+                  </BreadcrumbPage>
                 </BreadcrumbItem>
               </BreadcrumbList>
             </Breadcrumb>

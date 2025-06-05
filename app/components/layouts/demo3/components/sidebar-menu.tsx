@@ -2,16 +2,8 @@
 
 import Link from 'next/link';
 import {
-  BarChart3,
-  Bell,
-  CheckSquare,
-  Code,
-  HelpCircle,
-  MessageSquare,
-  Settings,
-  Shield,
+  HouseIcon,
   UserCircle,
-  Users,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
@@ -33,55 +25,14 @@ export interface Item {
 export function SidebarMenu() {
   const items: Item[] = [
     {
-      icon: BarChart3,
+      icon: HouseIcon,
       path: '/',
-      title: 'Dashboard',
+      title: 'Home',
     },
     {
       icon: UserCircle,
       path: '/public-profile/profiles/default',
       title: 'Profile',
-    },
-    {
-      icon: Settings,
-      path: '/account/home/get-started',
-      title: 'Account',
-    },
-    {
-      icon: Users,
-      path: '/network/get-started',
-      title: 'Network',
-      active: true,
-    },
-    {
-      icon: Shield,
-      path: '/account/billing/plans',
-      title: 'Plans',
-    },
-    {
-      icon: MessageSquare,
-      path: '/account/security/security-log',
-      title: 'Security Logs',
-    },
-    {
-      icon: Bell,
-      path: '/account/notifications',
-      title: 'Notifications',
-    },
-    {
-      icon: CheckSquare,
-      path: '/account/members/roles',
-      title: 'ACL',
-    },
-    {
-      icon: Code,
-      path: '/account/api-keys',
-      title: 'API Keys',
-    },
-    {
-      icon: HelpCircle,
-      path: 'https://docs.keenthemes.com/metronic-vite',
-      title: 'Docs',
     },
   ];
 
