@@ -9,11 +9,15 @@ import { LocationProfileSchema } from '@/app/(protected)/user-management/locatio
 import authOptions from '@/app/api/auth/[...nextauth]/auth-options';
 
 // GET: Fetch location by ID with users, parent, children
-export async function GET(request: Request, { params }: { params: { id: string } }) {
+export async function GET(
+  request: NextRequest,
+  context: { params: { id: string } }
+) {
   const session = await getServerSession(authOptions);
-  if (!session) return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
+  if (!session)
+    return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
 
-  const { id } = params;
+  const { id } = context.params;
   const location = await prisma.location.findUnique({
     where: { id },
     include: {
@@ -28,19 +32,25 @@ export async function GET(request: Request, { params }: { params: { id: string }
     },
   });
 
-  if (!location) return NextResponse.json({ message: 'Not found' }, { status: 404 });
+  if (!location)
+    return NextResponse.json({ message: 'Not found' }, { status: 404 });
   return NextResponse.json(location);
 }
 
 // PUT: Update location
-export async function PUT(request: NextRequest, { params }: { params: { id: string } }) {
+export async function PUT(
+  request: NextRequest,
+  context: { params: { id: string } }
+) {
   const session = await getServerSession(authOptions);
-  if (!session) return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
+  if (!session)
+    return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
 
-  const { id } = params;
+  const { id } = context.params;
   const body = await request.json();
   const parsedData = LocationProfileSchema.safeParse(body);
-  if (!parsedData.success) return NextResponse.json({ message: 'Invalid input.' }, { status: 400 });
+  if (!parsedData.success)
+    return NextResponse.json({ message: 'Invalid input.' }, { status: 400 });
 
   const { name, parentId } = parsedData.data;
   const clientIp = getClientIP(request);
@@ -63,11 +73,15 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
 }
 
 // DELETE: Trash location (soft delete)
-export async function DELETE(request: NextRequest, { params }: { params: { id: string } }) {
+export async function DELETE(
+  request: NextRequest,
+  context: { params: { id: string } }
+) {
   const session = await getServerSession(authOptions);
-  if (!session) return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
+  if (!session)
+    return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
 
-  const { id } = params;
+  const { id } = context.params;
   await prisma.location.update({
     where: { id },
     data: { isTrashed: true },
