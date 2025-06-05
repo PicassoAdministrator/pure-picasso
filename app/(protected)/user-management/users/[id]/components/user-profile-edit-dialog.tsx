@@ -1,5 +1,3 @@
-// app/(protected)/user-management/users/[id]/components/user-profile-edit-dialog.tsx
-
 'use client';
 
 import { useEffect } from 'react';
@@ -49,31 +47,35 @@ import {
   UserProfileSchemaType,
 } from '../forms/user-profile-schema';
 
-const UserProfileEditDialog = ({
-  open,
-  closeDialog,
-  user,
-}: {
+// --- Types ---
+type LocationSelectOption = {
+  id: string;
+  name: string;
+};
+
+type Props = {
   open: boolean;
   closeDialog: () => void;
-  user?: User; // <-- make user optional!
-}) => {
-  if (!user) return null;
-  const queryClient = useQueryClient();
+  user?: User;
+};
 
-  // Fetch available roles
-  const { data: roleList } = useRoleSelectQuery();
+const UserProfileEditDialog = ({ open, closeDialog, user }: Props) => {
+  // Blank return BEFORE hooks for compliance
+  if (!user) return null;
+
+  const queryClient = useQueryClient();
+  const { data: roleList = [] } = useRoleSelectQuery();
 
   // Defensive: Only try to access UserLocation if user is defined
   const userPrimaryLocationId =
-    user?.UserLocation?.find((ul) => ul.isPrimary)?.location?.id || '';
+    user.UserLocation?.find((ul) => ul.isPrimary)?.location?.id || '';
 
   const form = useForm<UserProfileSchemaType>({
     resolver: zodResolver(UserProfileSchema),
     defaultValues: {
-      name: user?.name || '',
-      roleId: user?.roleId || '',
-      status: user?.status || '',
+      name: user.name || '',
+      roleId: user.roleId || '',
+      status: user.status || '',
       primaryLocationId: userPrimaryLocationId,
     },
     mode: 'onSubmit',
@@ -109,22 +111,17 @@ const UserProfileEditDialog = ({
       return response.json();
     },
     onSuccess: () => {
-      const message = 'User updated successfully';
-
       toast.custom(
         () => (
           <Alert variant="mono" icon="success">
             <AlertIcon>
               <RiCheckboxCircleFill />
             </AlertIcon>
-            <AlertTitle>{message}</AlertTitle>
+            <AlertTitle>User updated successfully</AlertTitle>
           </Alert>
         ),
-        {
-          position: 'top-center',
-        },
+        { position: 'top-center' },
       );
-
       queryClient.invalidateQueries({ queryKey: ['user-users'] });
       queryClient.invalidateQueries({ queryKey: ['user-user'] });
       closeDialog();
@@ -139,9 +136,7 @@ const UserProfileEditDialog = ({
             <AlertTitle>{error.message}</AlertTitle>
           </Alert>
         ),
-        {
-          position: 'top-center',
-        },
+        { position: 'top-center' },
       );
     },
   });
@@ -156,17 +151,21 @@ const UserProfileEditDialog = ({
     mutation.mutate(payload);
   };
 
-  const { data: locations = [] } = useQuery({
+  // --- Fetch all locations for select dropdown, always call at top level
+  const { data: locations = [] } = useQuery<LocationSelectOption[]>({
     queryKey: ['locations', 'all'],
     queryFn: async () => {
       const res = await apiFetch('/api/user-management/locations?limit=1000');
       if (!res.ok) return [];
       const json = await res.json();
-      return json.data;
+      // Only need id and name for select
+      return (json.data || []).map((loc: any) => ({
+        id: loc.id,
+        name: loc.name,
+      }));
     },
     enabled: open,
   });
-
 
   return (
     <Dialog open={open} onOpenChange={closeDialog}>
@@ -205,8 +204,8 @@ const UserProfileEditDialog = ({
                   <FormLabel>Role</FormLabel>
                   <FormControl>
                     <Select
-                      onValueChange={(value) => field.onChange(value)}
-                      defaultValue={field.value}
+                      onValueChange={field.onChange}
+                      value={field.value}
                     >
                       <SelectTrigger>
                         <SelectValue placeholder="Select a role" />
@@ -234,16 +233,15 @@ const UserProfileEditDialog = ({
                   <FormLabel>Primary Location</FormLabel>
                   <FormControl>
                     <Select
-                      onValueChange={(val) => field.onChange(val === 'none' ? '' : val)}
+                      onValueChange={val => field.onChange(val === 'none' ? '' : val)}
                       value={field.value || 'none'}
                     >
                       <SelectTrigger>
                         <SelectValue placeholder="Select a primary location" />
                       </SelectTrigger>
                       <SelectContent>
-                        {/* Use 'none' instead of empty string */}
                         <SelectItem value="none">None assigned</SelectItem>
-                        {locations.map((loc: any) => (
+                        {locations.map((loc) => (
                           <SelectItem key={loc.id} value={loc.id}>
                             {loc.name}
                           </SelectItem>
@@ -263,8 +261,8 @@ const UserProfileEditDialog = ({
                   <FormLabel>Status</FormLabel>
                   <FormControl>
                     <Select
-                      onValueChange={(value) => field.onChange(value)}
-                      defaultValue={field.value}
+                      onValueChange={field.onChange}
+                      value={field.value}
                     >
                       <SelectTrigger>
                         <SelectValue placeholder="Select a status" />

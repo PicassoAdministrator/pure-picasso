@@ -146,7 +146,7 @@ export async function PUT(
       { message: 'User profile successfully updated.' },
       { status: 200 },
     );
-  } catch (error) {
+  } catch {
     return NextResponse.json(
       { message: 'Oops! Something went wrong. Please try again in a moment.' },
       { status: 500 },

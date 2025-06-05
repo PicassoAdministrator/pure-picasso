@@ -5,7 +5,7 @@ import { getServerSession } from 'next-auth/next';
 import { getClientIP } from '@/lib/api';
 import { prisma } from '@/lib/prisma';
 import { systemLog } from '@/services/system-log';
-import { LocationProfileSchema, LocationProfileSchemaType } from '@/app/(protected)/user-management/locations/[id]/forms/location-profile-schema';
+import { LocationProfileSchema } from '@/app/(protected)/user-management/locations/[id]/forms/location-profile-schema';
 import authOptions from '@/app/api/auth/[...nextauth]/auth-options';
 
 // GET: Fetch location by ID with users, parent, children

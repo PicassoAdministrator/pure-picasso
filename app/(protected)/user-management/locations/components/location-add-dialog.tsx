@@ -19,6 +19,13 @@ import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { LoaderCircleIcon } from 'lucide-react';
 
+// ---- Types ----
+type ParentLocation = {
+  id: string;
+  name: string;
+  parent?: { id: string; name: string } | null;
+};
+
 // Add parentId to schema
 const LocationAddSchema = z.object({
   name: z.string().min(2, 'Location name is required'),
@@ -36,13 +43,13 @@ const LocationAddDialog = ({
   const queryClient = useQueryClient();
 
   // Fetch locations for parent dropdown
-  const { data: parentOptions = [] } = useQuery({
+  const { data: parentOptions = [] } = useQuery<ParentLocation[]>({
     queryKey: ['locations', 'all'],
     queryFn: async () => {
       const res = await apiFetch('/api/user-management/locations?limit=1000');
       if (!res.ok) return [];
       const json = await res.json();
-      return json.data;
+      return json.data as ParentLocation[];
     },
     enabled: open,
   });
@@ -96,11 +103,11 @@ const LocationAddDialog = ({
   const isProcessing = mutation.status === 'pending';
 
   const handleSubmit = (values: LocationAddSchemaType) => {
-  mutation.mutate({
-    ...values,
-    parentId: values.parentId === 'none' ? null : values.parentId,
-  });
-};
+    mutation.mutate({
+      ...values,
+      parentId: values.parentId === 'none' ? null : values.parentId,
+    });
+  };
 
   return (
     <Dialog open={open} onOpenChange={closeDialog}>
@@ -128,32 +135,32 @@ const LocationAddDialog = ({
                 control={form.control}
                 name="parentId"
                 render={({ field }) => (
-                    <FormItem>
+                  <FormItem>
                     <FormLabel>Parent Location (optional)</FormLabel>
                     <FormControl>
-                        <Select
+                      <Select
                         onValueChange={field.onChange}
                         value={field.value || 'none'}
-                        >
+                      >
                         <SelectTrigger>
-                            <SelectValue placeholder="No parent (top-level location)" />
+                          <SelectValue placeholder="No parent (top-level location)" />
                         </SelectTrigger>
                         <SelectContent>
-                            <SelectItem value="none">No parent (top-level)</SelectItem>
-                            {parentOptions
-                            .filter((loc: any) => !loc.parent)
-                            .map((loc: any) => (
-                                <SelectItem key={loc.id} value={loc.id}>
+                          <SelectItem value="none">No parent (top-level)</SelectItem>
+                          {parentOptions
+                            .filter((loc) => !loc.parent)
+                            .map((loc) => (
+                              <SelectItem key={loc.id} value={loc.id}>
                                 {loc.name}
-                                </SelectItem>
+                              </SelectItem>
                             ))}
                         </SelectContent>
-                        </Select>
+                      </Select>
                     </FormControl>
                     <FormMessage />
-                    </FormItem>
+                  </FormItem>
                 )}
-            />
+              />
             </DialogBody>
             <DialogFooter>
               <Button type="button" variant="outline" onClick={closeDialog}>

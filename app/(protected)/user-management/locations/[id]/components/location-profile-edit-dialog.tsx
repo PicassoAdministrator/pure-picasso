@@ -41,12 +41,19 @@ import {
 import { LoaderCircleIcon } from 'lucide-react';
 import { z } from 'zod';
 
-// If your locations have a status, define your status options here:
-const LocationStatusProps = {
-  active: { label: 'Active' },
-  inactive: { label: 'Inactive' },
-  archived: { label: 'Archived' },
-};
+// ----------- Types -----------
+export interface LocationOption {
+  id: string;
+  name: string;
+  parent?: { id: string; name: string } | null;
+  status?: string;
+}
+
+export interface LocationProfileEditDialogProps {
+  open: boolean;
+  closeDialog: () => void;
+  location?: LocationOption | null;
+}
 
 // --------- Schema --------------
 const LocationProfileSchema = z.object({
@@ -56,28 +63,29 @@ const LocationProfileSchema = z.object({
 });
 type LocationProfileSchemaType = z.infer<typeof LocationProfileSchema>;
 
+const LocationStatusProps = {
+  active: { label: 'Active' },
+  inactive: { label: 'Inactive' },
+  archived: { label: 'Archived' },
+};
+
 // --------- Main Component -----------
 const LocationProfileEditDialog = ({
   open,
   closeDialog,
   location,
-}: {
-  open: boolean;
-  closeDialog: () => void;
-  location?: any; // Replace with your Location type if defined
-}) => {
-  if (!location) return null;
-
+}: LocationProfileEditDialogProps) => {
+  // --- All hooks at the top ---
   const queryClient = useQueryClient();
 
   // Fetch all locations for parent selection (exclude self)
-  const { data: locations = [] } = useQuery({
+  const { data: locations = [] } = useQuery<LocationOption[]>({
     queryKey: ['locations', 'all'],
     queryFn: async () => {
       const res = await apiFetch('/api/user-management/locations?limit=1000');
       if (!res.ok) return [];
       const json = await res.json();
-      return json.data;
+      return json.data as LocationOption[];
     },
     enabled: open,
   });
@@ -86,8 +94,8 @@ const LocationProfileEditDialog = ({
     resolver: zodResolver(LocationProfileSchema),
     defaultValues: {
       name: location?.name || '',
-      parentId: location?.parent?.id || '',
-      status: location?.status || '', // remove if you don't use status
+      parentId: location?.parent?.id || 'none',
+      status: location?.status || '',
     },
     mode: 'onSubmit',
   });
@@ -96,7 +104,7 @@ const LocationProfileEditDialog = ({
     if (open && location) {
       form.reset({
         name: location.name || '',
-        parentId: location.parent?.id || '',
+        parentId: location.parent?.id || 'none',
         status: location.status || '',
       });
     }
@@ -104,11 +112,9 @@ const LocationProfileEditDialog = ({
 
   const mutation = useMutation({
     mutationFn: async (values: LocationProfileSchemaType) => {
-      const response = await apiFetch(`/api/user-management/locations/${location.id}`, {
+      const response = await apiFetch(`/api/user-management/locations/${location?.id}`, {
         method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(values),
       });
 
@@ -129,11 +135,11 @@ const LocationProfileEditDialog = ({
             <AlertTitle>Location updated successfully</AlertTitle>
           </Alert>
         ),
-        { position: 'top-center' },
+        { position: 'top-center' }
       );
 
       queryClient.invalidateQueries({ queryKey: ['locations'] });
-      queryClient.invalidateQueries({ queryKey: ['location', location.id] });
+      if (location?.id) queryClient.invalidateQueries({ queryKey: ['location', location.id] });
       closeDialog();
     },
     onError: (error: Error) => {
@@ -146,7 +152,7 @@ const LocationProfileEditDialog = ({
             <AlertTitle>{error.message}</AlertTitle>
           </Alert>
         ),
-        { position: 'top-center' },
+        { position: 'top-center' }
       );
     },
   });
@@ -154,10 +160,13 @@ const LocationProfileEditDialog = ({
   const isProcessing = mutation.status === 'pending';
 
   const handleSubmit = (values: LocationProfileSchemaType) => {
-    // Convert '' (none) to null for parentId if needed
-    const payload = { ...values, parentId: values.parentId === '' ? null : values.parentId };
+    // Convert "none" to null for parentId if needed
+    const payload = { ...values, parentId: values.parentId === 'none' ? null : values.parentId };
     mutation.mutate(payload);
   };
+
+  // Show nothing if no location (avoids conditional hooks)
+  if (!location) return null;
 
   return (
     <Dialog open={open} onOpenChange={closeDialog}>
@@ -185,6 +194,7 @@ const LocationProfileEditDialog = ({
                 </FormItem>
               )}
             />
+
             <FormField
               control={form.control}
               name="parentId"
@@ -193,8 +203,8 @@ const LocationProfileEditDialog = ({
                   <FormLabel>Parent Location</FormLabel>
                   <FormControl>
                     <Select
-                      value={field.value || "none"}
-                      onValueChange={val => field.onChange(val === "none" ? null : val)}
+                      value={field.value ?? 'none'}
+                      onValueChange={val => field.onChange(val === 'none' ? null : val)}
                     >
                       <SelectTrigger>
                         <SelectValue placeholder="Select a parent location" />
@@ -204,13 +214,13 @@ const LocationProfileEditDialog = ({
                           <SelectItem value="none">None</SelectItem>
                           {locations
                             .filter(
-                              (loc: any) =>
+                              (loc) =>
                                 loc &&
-                                typeof loc.id === "string" &&
+                                typeof loc.id === 'string' &&
                                 loc.id.length > 0 &&
                                 loc.id !== location.id
                             )
-                            .map((loc: any) => (
+                            .map((loc) => (
                               <SelectItem key={loc.id} value={loc.id}>
                                 {loc.name}
                               </SelectItem>
@@ -224,8 +234,6 @@ const LocationProfileEditDialog = ({
               )}
             />
 
-
-            {/* If your locations have a status field */}
             <FormField
               control={form.control}
               name="status"
@@ -242,13 +250,11 @@ const LocationProfileEditDialog = ({
                       </SelectTrigger>
                       <SelectContent>
                         <SelectGroup>
-                          {Object.entries(LocationStatusProps).map(
-                            ([key, { label }]) => (
-                              <SelectItem key={key} value={key}>
-                                {label}
-                              </SelectItem>
-                            ),
-                          )}
+                          {Object.entries(LocationStatusProps).map(([key, { label }]) => (
+                            <SelectItem key={key} value={key}>
+                              {label}
+                            </SelectItem>
+                          ))}
                         </SelectGroup>
                       </SelectContent>
                     </Select>
@@ -257,6 +263,7 @@ const LocationProfileEditDialog = ({
                 </FormItem>
               )}
             />
+
             <DialogFooter>
               <Button type="button" variant="outline" onClick={closeDialog}>
                 Cancel

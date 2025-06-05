@@ -1,8 +1,8 @@
-# Metronic 9 | All-in-One Tailwind based HTML/React/Next.js Template for Modern Web Applications
+# Pure Picasso v0.0.1 | All-in-One Business Application
 
 ## Getting Started
 
-The official [Metronic Next.js Documentation](https://docs.keenthemes.com/metronic-nextjs) will be released soon,
+The official [Pure Picasso Documentation](https://docs.purepicasso.com/) will be released soon,
 alongside the stable Metronic release, expected within the next week.
 
 ### Prerequisites

@@ -20,7 +20,7 @@ export async function PATCH(request: NextRequest) {
   });
 
   // Check if a UserLocation exists for this location
-  let userLocation = await prisma.userLocation.findFirst({
+  const userLocation = await prisma.userLocation.findFirst({
     where: { userId: session.user.id, locationId },
   });
 

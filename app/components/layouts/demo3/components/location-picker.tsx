@@ -14,6 +14,8 @@ type UserLocationEntry = {
   isCurrent?: boolean;
 };
 
+type LocationFromApi = { id: string; name: string };
+
 function isCorporate(roleName?: string | null) {
   if (!roleName) return false;
   const rn = roleName.toLowerCase();
@@ -33,7 +35,7 @@ export function LocationPicker() {
 
   // All locations (from API, for Owner/Corporate)
   const { data: allLocations, isLoading } = useAllLocations();
-  const allLocs: UserLocationEntry[] = (allLocations || []).map((l: any) => ({
+  const allLocs: UserLocationEntry[] = (allLocations || []).map((l: LocationFromApi) => ({
     location: { id: l.id, name: l.name },
     isPrimary: assigned.find(a => a.location.id === l.id)?.isPrimary,
     isCurrent: assigned.find(a => a.location.id === l.id)?.isCurrent,
@@ -67,7 +69,7 @@ export function LocationPicker() {
       const updatedUserLocations = updatedUser?.userLocations || [];
 
       // Only assigned locations (not allLocs): find which one is now current
-      const found = updatedUserLocations.find((ul: any) => ul.isCurrent);
+      const found = updatedUserLocations.find((ul: UserLocationEntry) => ul.isCurrent);
       if (found) {
         nextCurrent = found.location;
       } else {

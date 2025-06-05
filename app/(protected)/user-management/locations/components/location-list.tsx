@@ -30,6 +30,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import LocationAddDialog from './location-add-dialog';
 import { AvatarGroup } from '@/app/components/partials/common/avatar-group';
 
+// --- Types ---
 export interface LocationUser {
   id: string;
   userId: string;
@@ -39,12 +40,15 @@ export interface LocationUser {
   user: { id: string; name: string; email: string };
   role: { id: string; name: string };
 }
-
+export interface LocationChild {
+  id: string;
+  name: string;
+}
 export interface Location {
   id: string;
   name: string;
   parent?: { id: string; name: string } | null;
-  children?: { id: string; name: string }[];
+  children?: LocationChild[];
   users?: LocationUser[];
 }
 
@@ -140,7 +144,7 @@ const LocationsList = () => {
         cell: ({ row }) =>
           row.original.children && row.original.children.length > 0 ? (
             <span>
-              {row.original.children.map((child: any) => child.name).join(', ')}
+              {row.original.children.map((child: LocationChild) => child.name).join(', ')}
             </span>
           ) : (
             <span className="text-sm text-muted-foreground">—</span>
@@ -256,12 +260,15 @@ const LocationsList = () => {
               disabled={isLoading}
               className="ps-9 w-full sm:40 md:w-64"
             />
-            {searchQuery.length > 0 && (
+            {inputValue.length > 0 && (
               <Button
                 mode="icon"
                 variant="dim"
                 className="absolute end-1.5 top-1/2 -translate-y-1/2 h-6 w-6"
-                onClick={() => setSearchQuery('')}
+                onClick={() => {
+                  setInputValue('');
+                  setSearchQuery('');
+                }}
               >
                 <X />
               </Button>
@@ -312,8 +319,6 @@ const LocationsList = () => {
           </CardFooter>
         </Card>
       </DataGrid>
-      {/* You can add a LocationAddDialog here */}
-      {/* <LocationAddDialog open={addDialogOpen} closeDialog={() => setAddDialogOpen(false)} /> */}
     </>
   );
 };

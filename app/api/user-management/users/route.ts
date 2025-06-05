@@ -25,7 +25,6 @@ export async function GET(req: NextRequest) {
   const roleId = searchParams.get('roleId') || null;
   const locationId = searchParams.get('locationId') || null;
 
-
   try {
     // Validate user session
     const session = await getServerSession(authOptions);
@@ -84,43 +83,42 @@ export async function GET(req: NextRequest) {
     };
 
     // Fetch users with filters
-   const users = await prisma.user.findMany({
-    where: {
-      AND: [
-        ...(statusFilter ? [{ status: statusFilter }] : []),
-        ...(roleId && roleId !== 'all' ? [{ roleId }] : []),
-        {
-          OR: [
-            { name: { contains: query, mode: 'insensitive' } },
-            { email: { contains: query, mode: 'insensitive' } },
-          ],
-        },
-      ],
-    },
-    skip: (page - 1) * limit,
-    take: limit,
-    orderBy,
-    select: {
-      id: true,
-      isTrashed: true,
-      avatar: true,
-      name: true,
-      email: true,
-      status: true,
-      createdAt: true,
-      lastSignInAt: true,
-      role: { select: { id: true, name: true } },
-      // --- Add this block:
-      UserLocation: {
-        select: {
-          isPrimary: true,
-          location: { select: { id: true, name: true } },
-        },
-        where: { isPrimary: true },
-        take: 1,
+    const users = await prisma.user.findMany({
+      where: {
+        AND: [
+          ...(statusFilter ? [{ status: statusFilter }] : []),
+          ...(roleId && roleId !== 'all' ? [{ roleId }] : []),
+          {
+            OR: [
+              { name: { contains: query, mode: 'insensitive' } },
+              { email: { contains: query, mode: 'insensitive' } },
+            ],
+          },
+        ],
       },
-    },
-  });
+      skip: (page - 1) * limit,
+      take: limit,
+      orderBy,
+      select: {
+        id: true,
+        isTrashed: true,
+        avatar: true,
+        name: true,
+        email: true,
+        status: true,
+        createdAt: true,
+        lastSignInAt: true,
+        role: { select: { id: true, name: true } },
+        UserLocation: {
+          select: {
+            isPrimary: true,
+            location: { select: { id: true, name: true } },
+          },
+          where: { isPrimary: true },
+          take: 1,
+        },
+      },
+    });
 
     return NextResponse.json({
       data: users,
@@ -227,7 +225,7 @@ export async function POST(request: NextRequest) {
       { message: 'User successfully added.', user: result },
       { status: 200 }
     );
-  } catch (err) {
+  } catch {
     return NextResponse.json(
       { message: 'Oops! Something went wrong. Please try again in a moment.' },
       { status: 500 }
