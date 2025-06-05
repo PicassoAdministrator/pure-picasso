@@ -8,6 +8,7 @@ import { Location } from '@/app/models/location'; // Adjust the import path to y
 import LocationDeleteDialog from './location-delete-dialog';
 import LocationRestoreDialog from './location-restore-dialog';
 
+
 const LocationDangerZone = ({
   location,
   isLoading,
@@ -45,7 +46,7 @@ const LocationDangerZone = ({
           <Button
             variant="destructive"
             onClick={() => setDeleteDialogOpen(true)}
-            disabled={location.isProtected} // if you have isProtected for locations
+            disabled={!!location.isProtected} // if you have isProtected for locations
           >
             Delete location
           </Button>

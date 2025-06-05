@@ -1,8 +1,6 @@
-// app/(protected)/user-management/locations/[id]/layout.tsx
-
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
+import { use, useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { useQuery } from '@tanstack/react-query';
@@ -26,12 +24,14 @@ import LocationHero from './components/location-hero';
 type NavRoutes = Record<string, { title: string; icon: React.FC; path: string }>;
 
 type Props = {
-  params: { id: string };
+  params: Promise<{ id: string }>;
   children: React.ReactNode;
 };
 
 export default function LocationLayout({ params, children }: Props) {
-  const { id } = params;
+  // 👇 Unwrap the Promise using React.use()
+  const { id } = use(params);
+
   const pathname = usePathname();
   const router = useRouter();
   const [activeTab, setActiveTab] = useState<string>('');

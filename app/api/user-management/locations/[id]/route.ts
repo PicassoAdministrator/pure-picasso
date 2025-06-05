@@ -13,7 +13,7 @@ export async function GET(request: Request, { params }: { params: { id: string }
   const session = await getServerSession(authOptions);
   if (!session) return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
 
-  const { id } = await params;
+  const { id } = params;
   const location = await prisma.location.findUnique({
     where: { id },
     include: {
@@ -33,11 +33,11 @@ export async function GET(request: Request, { params }: { params: { id: string }
 }
 
 // PUT: Update location
-export async function PUT(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+export async function PUT(request: NextRequest, { params }: { params: { id: string } }) {
   const session = await getServerSession(authOptions);
   if (!session) return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
 
-  const { id } = await params;
+  const { id } = params;
   const body = await request.json();
   const parsedData = LocationProfileSchema.safeParse(body);
   if (!parsedData.success) return NextResponse.json({ message: 'Invalid input.' }, { status: 400 });
@@ -63,11 +63,11 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
 }
 
 // DELETE: Trash location (soft delete)
-export async function DELETE(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+export async function DELETE(request: NextRequest, { params }: { params: { id: string } }) {
   const session = await getServerSession(authOptions);
   if (!session) return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
 
-  const { id } = await params;
+  const { id } = params;
   await prisma.location.update({
     where: { id },
     data: { isTrashed: true },

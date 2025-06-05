@@ -4,7 +4,11 @@ import { useSession } from 'next-auth/react';
 export interface Location {
   id: string;
   name: string;
-  // ...other fields
+  isTrashed?: boolean;     // <-- Make these optional if you need
+  isProtected?: boolean;
+  parent?: { id: string; name: string } | null;
+  children?: { id: string; name: string }[];
+  users?: UserLocation[];
 }
 
 export interface UserLocation {

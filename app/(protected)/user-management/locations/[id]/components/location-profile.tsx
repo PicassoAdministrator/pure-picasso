@@ -21,6 +21,7 @@ export interface Location {
   isProtected: boolean | undefined;
   id: string;
   name: string;
+  isTrashed: boolean | undefined;
   parent?: { id: string; name: string } | null;
   children?: { id: string; name: string }[];
   users?: LocationUser[];
@@ -85,7 +86,7 @@ export default function LocationProfile({ location, isLoading }: LocationProfile
               </dd>
             </div>
           </dl>
-          <Button variant="outline" onClick={() => setEditOpen(true)} disabled={location.isProtected} >
+          <Button variant="outline" onClick={() => setEditOpen(true)} disabled={!!location.isProtected} >
             Edit location details
           </Button>
         </CardContent>
