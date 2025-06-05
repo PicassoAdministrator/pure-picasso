@@ -1531,7 +1531,7 @@ export const MENU_ROOT: MenuConfig = [
     path: '/',
     childrenIndex: 0,
   },
-  {
+/*   {
     title: 'Public Profile',
     icon: UserCircle,
     rootPath: '/public-profile/',
@@ -1565,7 +1565,7 @@ export const MENU_ROOT: MenuConfig = [
     rootPath: '/store-client/',
     path: '/store-client/home',
     childrenIndex: 6,
-  },
+  }, */
   {
     title: 'User Management',
     icon: ShieldUser,

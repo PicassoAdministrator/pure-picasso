@@ -21,7 +21,6 @@ import {
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { LoaderCircleIcon } from 'lucide-react';
-import { Icons } from '@/components/common/icons';
 import { getSigninSchema, SigninSchemaType } from '../forms/signin-schema';
 
 export default function Page() {
