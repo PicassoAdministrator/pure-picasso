@@ -1,6 +1,6 @@
 'use client';
 
-import { use, useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { useQuery } from '@tanstack/react-query';
@@ -16,8 +16,13 @@ import LocationHero from './components/location-hero';
 
 type NavRoutes = Record<string, { title: string; icon: React.FC; path: string }>;
 
-export default function LocationLayout({ params, children }) {
-  const { id } = use(params);
+type Props = {
+  params: { id: string };
+  children: React.ReactNode;
+};
+
+export default function LocationLayout({ params, children }: Props) {
+  const { id } = params;
   const pathname = usePathname();
   const router = useRouter();
   const [activeTab, setActiveTab] = useState<string>('');
@@ -58,7 +63,7 @@ export default function LocationLayout({ params, children }) {
     retry: 1,
   });
 
-  const handleTabClick = (key, path) => {
+  const handleTabClick = (key: string, path: string) => {
     setActiveTab(key);
     router.push(path);
   };
