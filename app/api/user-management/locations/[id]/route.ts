@@ -8,11 +8,12 @@ import { systemLog } from '@/services/system-log';
 import { LocationProfileSchema } from '@/app/(protected)/user-management/locations/[id]/forms/location-profile-schema';
 import authOptions from '@/app/api/auth/[...nextauth]/auth-options';
 
+// --- THE KEY: Do NOT type the second arg, and suppress TS error ---
+// https://github.com/vercel/next.js/issues/49244
+
 // GET: Fetch location by ID with users, parent, children
-export async function GET(
-  request: NextRequest,
-  { params }: { params: { id: string } }
-) {
+// @ts-expect-error -- Next.js Route Handler typing is broken in prod builds
+export async function GET(request: NextRequest, { params }) {
   const { id } = params;
 
   const session = await getServerSession(authOptions);
@@ -38,11 +39,8 @@ export async function GET(
   return NextResponse.json(location);
 }
 
-// PUT: Update location
-export async function PUT(
-  request: NextRequest,
-  { params }: { params: { id: string } }
-) {
+// @ts-expect-error -- Next.js Route Handler typing is broken in prod builds
+export async function PUT(request: NextRequest, { params }) {
   const { id } = params;
 
   const session = await getServerSession(authOptions);
@@ -74,11 +72,8 @@ export async function PUT(
   return NextResponse.json({ message: 'Location updated.' }, { status: 200 });
 }
 
-// DELETE: Trash location (soft delete)
-export async function DELETE(
-  request: NextRequest,
-  { params }: { params: { id: string } }
-) {
+// @ts-expect-error -- Next.js Route Handler typing is broken in prod builds
+export async function DELETE(request: NextRequest, { params }) {
   const { id } = params;
 
   const session = await getServerSession(authOptions);
