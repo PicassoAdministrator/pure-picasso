@@ -8,12 +8,12 @@ import { systemLog } from '@/services/system-log';
 import { LocationProfileSchema } from '@/app/(protected)/user-management/locations/[id]/forms/location-profile-schema';
 import authOptions from '@/app/api/auth/[...nextauth]/auth-options';
 
-// Explicit context type to satisfy ESLint & Next.js
-type RouteContext = { params: { id: string } };
-
 // GET: Fetch location by ID with users, parent, children
-export async function GET(request: NextRequest, context: RouteContext) {
-  const { id } = context.params;
+export async function GET(
+  request: NextRequest,
+  { params }: { params: { id: string } }
+) {
+  const { id } = params;
 
   const session = await getServerSession(authOptions);
   if (!session)
@@ -39,8 +39,11 @@ export async function GET(request: NextRequest, context: RouteContext) {
 }
 
 // PUT: Update location
-export async function PUT(request: NextRequest, context: RouteContext) {
-  const { id } = context.params;
+export async function PUT(
+  request: NextRequest,
+  { params }: { params: { id: string } }
+) {
+  const { id } = params;
 
   const session = await getServerSession(authOptions);
   if (!session)
@@ -72,8 +75,11 @@ export async function PUT(request: NextRequest, context: RouteContext) {
 }
 
 // DELETE: Trash location (soft delete)
-export async function DELETE(request: NextRequest, context: RouteContext) {
-  const { id } = context.params;
+export async function DELETE(
+  request: NextRequest,
+  { params }: { params: { id: string } }
+) {
+  const { id } = params;
 
   const session = await getServerSession(authOptions);
   if (!session)
