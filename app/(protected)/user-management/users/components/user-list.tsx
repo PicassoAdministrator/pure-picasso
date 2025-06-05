@@ -42,6 +42,12 @@ import { useRoleSelectQuery } from '../../roles/hooks/use-role-select-query';
 import { getUserStatusProps, UserStatusProps } from '../constants/status';
 import UserInviteDialog from './user-add-dialog';
 
+// --- Type for locations dropdown ---
+type LocationOption = {
+  id: string;
+  name: string;
+};
+
 const UserList = () => {
   const [pagination, setPagination] = useState<PaginationState>({
     pageIndex: 0,
@@ -58,7 +64,6 @@ const UserList = () => {
   // Role select query
   const { data: roleList } = useRoleSelectQuery();
   const [selectedLocation, setSelectedLocation] = useState<string | null>('all');
-
 
   // Fetch users from the server API
   const fetchUsers = async ({
@@ -128,14 +133,17 @@ const UserList = () => {
     retry: 1,
   });
 
-  // Fetch locations for the filter dropdown
-  const { data: locations } = useQuery({
+  // Fetch locations for the filter dropdown (typed!)
+  const { data: locations } = useQuery<LocationOption[]>({
     queryKey: ['locations', 'all'],
     queryFn: async () => {
       const res = await apiFetch('/api/user-management/locations?limit=1000');
       if (!res.ok) return [];
       const json = await res.json();
-      return json.data;
+      return (json.data || []).map((loc: any) => ({
+        id: loc.id,
+        name: loc.name,
+      }));
     },
     staleTime: Infinity,
     gcTime: 1000 * 60 * 60,
@@ -444,7 +452,7 @@ const UserList = () => {
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="all">All locations</SelectItem>
-              {locations?.map((loc: any) => (
+              {locations?.map((loc) => (
                 <SelectItem key={loc.id} value={loc.id}>
                   {loc.name}
                 </SelectItem>

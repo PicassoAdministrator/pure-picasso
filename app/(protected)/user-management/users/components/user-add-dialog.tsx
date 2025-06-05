@@ -40,6 +40,12 @@ import { UserRole } from '@/app/models/user';
 import { useRoleSelectQuery } from '../../roles/hooks/use-role-select-query';
 import { UserAddSchema, UserAddSchemaType } from '../forms/user-add-schema';
 
+// --- Define type for locations ---
+type LocationOption = {
+  id: string;
+  name: string;
+};
+
 const UserAddDialog = ({
   open,
   closeDialog,
@@ -51,14 +57,18 @@ const UserAddDialog = ({
 
   const { data: roleList } = useRoleSelectQuery();
 
-  // Fetch locations for the select
-  const { data: locations = [] } = useQuery({
+  // Fetch locations for the select, type the result as LocationOption[]
+  const { data: locations = [] } = useQuery<LocationOption[]>({
     queryKey: ['locations', 'all'],
     queryFn: async () => {
       const res = await apiFetch('/api/user-management/locations?limit=1000');
       if (!res.ok) return [];
       const json = await res.json();
-      return json.data;
+      // Map raw data to type
+      return (json.data || []).map((loc: any) => ({
+        id: loc.id,
+        name: loc.name,
+      }));
     },
     enabled: open,
   });
@@ -228,7 +238,7 @@ const UserAddDialog = ({
                         <SelectContent>
                           <SelectGroup>
                             <SelectItem value="_none">None assigned</SelectItem>
-                            {locations.map((loc: any) => (
+                            {locations.map((loc) => (
                               <SelectItem key={loc.id} value={loc.id}>
                                 {loc.name}
                               </SelectItem>

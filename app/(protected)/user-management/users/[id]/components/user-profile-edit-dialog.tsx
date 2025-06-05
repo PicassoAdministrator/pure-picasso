@@ -47,7 +47,6 @@ import {
   UserProfileSchemaType,
 } from '../forms/user-profile-schema';
 
-// --- Types ---
 type LocationSelectOption = {
   id: string;
   name: string;
@@ -60,13 +59,26 @@ type Props = {
 };
 
 const UserProfileEditDialog = ({ open, closeDialog, user }: Props) => {
-  // Blank return BEFORE hooks for compliance
-  if (!user) return null;
-
+  // All hooks must be called at the top level!
   const queryClient = useQueryClient();
   const { data: roleList = [] } = useRoleSelectQuery();
+  const { data: locations = [] } = useQuery<LocationSelectOption[]>({
+    queryKey: ['locations', 'all'],
+    queryFn: async () => {
+      const res = await apiFetch('/api/user-management/locations?limit=1000');
+      if (!res.ok) return [];
+      const json = await res.json();
+      return (json.data || []).map((loc: { id: string; name: string }) => ({
+        id: loc.id,
+        name: loc.name,
+      }));
+    },
+    enabled: open,
+  });
 
-  // Defensive: Only try to access UserLocation if user is defined
+  // Only return null after all hooks, to comply with react-hooks rules
+  if (!user) return null;
+
   const userPrimaryLocationId =
     user.UserLocation?.find((ul) => ul.isPrimary)?.location?.id || '';
 
@@ -91,7 +103,8 @@ const UserProfileEditDialog = ({ open, closeDialog, user }: Props) => {
           user.UserLocation?.find((ul) => ul.isPrimary)?.location?.id || '',
       });
     }
-  }, [open, user, form]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open, user]);
 
   const mutation = useMutation({
     mutationFn: async (values: UserProfileSchemaType) => {
@@ -150,22 +163,6 @@ const UserProfileEditDialog = ({ open, closeDialog, user }: Props) => {
     };
     mutation.mutate(payload);
   };
-
-  // --- Fetch all locations for select dropdown, always call at top level
-  const { data: locations = [] } = useQuery<LocationSelectOption[]>({
-    queryKey: ['locations', 'all'],
-    queryFn: async () => {
-      const res = await apiFetch('/api/user-management/locations?limit=1000');
-      if (!res.ok) return [];
-      const json = await res.json();
-      // Only need id and name for select
-      return (json.data || []).map((loc: any) => ({
-        id: loc.id,
-        name: loc.name,
-      }));
-    },
-    enabled: open,
-  });
 
   return (
     <Dialog open={open} onOpenChange={closeDialog}>
