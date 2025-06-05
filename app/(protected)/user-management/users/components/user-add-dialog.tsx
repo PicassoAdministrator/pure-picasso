@@ -57,15 +57,14 @@ const UserAddDialog = ({
 
   const { data: roleList } = useRoleSelectQuery();
 
-  // Fetch locations for the select, type the result as LocationOption[]
+  // Fetch locations for the select
   const { data: locations = [] } = useQuery<LocationOption[]>({
     queryKey: ['locations', 'all'],
     queryFn: async () => {
       const res = await apiFetch('/api/user-management/locations?limit=1000');
       if (!res.ok) return [];
       const json = await res.json();
-      // Map raw data to type
-      return (json.data || []).map((loc: any) => ({
+      return (json.data || []).map((loc: LocationOption) => ({
         id: loc.id,
         name: loc.name,
       }));

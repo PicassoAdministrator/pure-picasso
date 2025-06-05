@@ -47,6 +47,7 @@ import {
   UserProfileSchemaType,
 } from '../forms/user-profile-schema';
 
+// --- Types ---
 type LocationSelectOption = {
   id: string;
   name: string;
@@ -59,16 +60,17 @@ type Props = {
 };
 
 const UserProfileEditDialog = ({ open, closeDialog, user }: Props) => {
-  // All hooks must be called at the top level!
+  // Always call hooks first!
   const queryClient = useQueryClient();
   const { data: roleList = [] } = useRoleSelectQuery();
+
   const { data: locations = [] } = useQuery<LocationSelectOption[]>({
     queryKey: ['locations', 'all'],
     queryFn: async () => {
       const res = await apiFetch('/api/user-management/locations?limit=1000');
       if (!res.ok) return [];
       const json = await res.json();
-      return (json.data || []).map((loc: { id: string; name: string }) => ({
+      return (json.data || []).map((loc: LocationSelectOption) => ({
         id: loc.id,
         name: loc.name,
       }));
@@ -76,18 +78,16 @@ const UserProfileEditDialog = ({ open, closeDialog, user }: Props) => {
     enabled: open,
   });
 
-  // Only return null after all hooks, to comply with react-hooks rules
-  if (!user) return null;
-
+  // Defensive: fallback default values
   const userPrimaryLocationId =
-    user.UserLocation?.find((ul) => ul.isPrimary)?.location?.id || '';
+    user?.UserLocation?.find((ul) => ul.isPrimary)?.location?.id || '';
 
   const form = useForm<UserProfileSchemaType>({
     resolver: zodResolver(UserProfileSchema),
     defaultValues: {
-      name: user.name || '',
-      roleId: user.roleId || '',
-      status: user.status || '',
+      name: user?.name || '',
+      roleId: user?.roleId || '',
+      status: user?.status || '',
       primaryLocationId: userPrimaryLocationId,
     },
     mode: 'onSubmit',
@@ -108,7 +108,7 @@ const UserProfileEditDialog = ({ open, closeDialog, user }: Props) => {
 
   const mutation = useMutation({
     mutationFn: async (values: UserProfileSchemaType) => {
-      const response = await apiFetch(`/api/user-management/users/${user.id}`, {
+      const response = await apiFetch(`/api/user-management/users/${user?.id}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -164,6 +164,9 @@ const UserProfileEditDialog = ({ open, closeDialog, user }: Props) => {
     mutation.mutate(payload);
   };
 
+  // Return null after hooks, for compliance
+  if (!user) return null;
+
   return (
     <Dialog open={open} onOpenChange={closeDialog}>
       <DialogContent close={false}>
@@ -177,7 +180,7 @@ const UserProfileEditDialog = ({ open, closeDialog, user }: Props) => {
           >
             {mutation.status === 'error' && (
               <Alert variant="destructive">
-                <AlertDescription>{mutation.error.message}</AlertDescription>
+                <AlertDescription>{mutation.error?.message}</AlertDescription>
               </Alert>
             )}
             <FormField
