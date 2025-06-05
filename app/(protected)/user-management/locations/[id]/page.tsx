@@ -1,3 +1,5 @@
+'use client'
+
 import { useLocation } from './components/location-context';
 import LocationDangerZone from './components/location-danger-zone';
 import LocationProfile from './components/location-profile';
