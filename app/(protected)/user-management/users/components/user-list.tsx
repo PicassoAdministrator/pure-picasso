@@ -37,7 +37,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Skeleton } from '@/components/ui/skeleton';
-import { User, UserStatus } from '@/app/models/user';
+import { User, UserRole, UserStatus } from '@/app/models/user';
 import { useRoleSelectQuery } from '../../roles/hooks/use-role-select-query';
 import { getUserStatusProps, UserStatusProps } from '../constants/status';
 import UserInviteDialog from './user-add-dialog';
@@ -140,7 +140,7 @@ const UserList = () => {
       const res = await apiFetch('/api/user-management/locations?limit=1000');
       if (!res.ok) return [];
       const json = await res.json();
-      return (json.data || []).map((loc: any) => ({
+      return (json.data || []).map((loc: LocationOption) => ({
         id: loc.id,
         name: loc.name,
       }));
@@ -431,7 +431,7 @@ const UserList = () => {
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="all">All roles</SelectItem>
-              {roleList?.map((role: User) => (
+              {roleList?.map((role: UserRole) => (
                 <SelectItem key={role.id} value={role.id}>
                   {role.name}
                 </SelectItem>
@@ -452,7 +452,7 @@ const UserList = () => {
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="all">All locations</SelectItem>
-              {locations?.map((loc) => (
+              {locations?.map((loc: LocationOption) => (
                 <SelectItem key={loc.id} value={loc.id}>
                   {loc.name}
                 </SelectItem>
