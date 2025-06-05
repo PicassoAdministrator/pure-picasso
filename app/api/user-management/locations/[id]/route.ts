@@ -8,8 +8,11 @@ import { systemLog } from '@/services/system-log';
 import { LocationProfileSchema } from '@/app/(protected)/user-management/locations/[id]/forms/location-profile-schema';
 import authOptions from '@/app/api/auth/[...nextauth]/auth-options';
 
+// Explicit context type to satisfy ESLint & Next.js
+type RouteContext = { params: { id: string } };
+
 // GET: Fetch location by ID with users, parent, children
-export async function GET(request: NextRequest, context: any) {
+export async function GET(request: NextRequest, context: RouteContext) {
   const { id } = context.params;
 
   const session = await getServerSession(authOptions);
@@ -36,7 +39,7 @@ export async function GET(request: NextRequest, context: any) {
 }
 
 // PUT: Update location
-export async function PUT(request: NextRequest, context: any) {
+export async function PUT(request: NextRequest, context: RouteContext) {
   const { id } = context.params;
 
   const session = await getServerSession(authOptions);
@@ -69,7 +72,7 @@ export async function PUT(request: NextRequest, context: any) {
 }
 
 // DELETE: Trash location (soft delete)
-export async function DELETE(request: NextRequest, context: any) {
+export async function DELETE(request: NextRequest, context: RouteContext) {
   const { id } = context.params;
 
   const session = await getServerSession(authOptions);
