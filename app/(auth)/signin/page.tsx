@@ -33,8 +33,8 @@ export default function Page() {
   const form = useForm<SigninSchemaType>({
     resolver: zodResolver(getSigninSchema()),
     defaultValues: {
-      email: 'owner@user.com',
-      password: '123456',
+      email: '',
+      password: '',
       rememberMe: false,
     },
   });
@@ -85,14 +85,14 @@ export default function Page() {
             <RiErrorWarningFill className="text-primary" />
           </AlertIcon>
           <AlertTitle className="text-accent-foreground">
-            Use <span className="text-mono font-semibold">owner@user.com</span>{' '}
+            Use <span className="text-mono font-semibold">Admin</span>{' '}
             username and{' '}
-            <span className="text-mono font-semibold">123456</span> for demo
+            <span className="text-mono font-semibold">Password</span> for
             access.
           </AlertTitle>
         </Alert>
 
-        <div className="flex flex-col gap-3.5">
+        {/* <div className="flex flex-col gap-3.5">
           <Button
             variant="outline"
             type="button"
@@ -101,16 +101,16 @@ export default function Page() {
             <Icons.googleColorful className="size-5! opacity-100!" /> Sign in
             with Google
           </Button>
-        </div>
+        </div> */}
 
-        <div className="relative py-1.5">
+        {/* <div className="relative py-1.5">
           <div className="absolute inset-0 flex items-center">
             <span className="w-full border-t" />
           </div>
           <div className="relative flex justify-center text-xs uppercase">
             <span className="bg-background px-2 text-muted-foreground">or</span>
           </div>
-        </div>
+        </div> */}
 
         {error && (
           <Alert variant="destructive">
@@ -203,11 +203,11 @@ export default function Page() {
         <div className="flex flex-col gap-2.5">
           <Button type="submit" disabled={isProcessing}>
             {isProcessing ? <LoaderCircleIcon className="size-4 animate-spin" /> : null}
-            Continue
+            Sign In
           </Button>
         </div>
 
-        <p className="text-sm text-muted-foreground text-center">
+        {/* <p className="text-sm text-muted-foreground text-center">
           Don&apos;t have an account?{' '}
           <Link
             href="/signup"
@@ -215,7 +215,7 @@ export default function Page() {
           >
             Sign Up
           </Link>
-        </p>
+        </p> */}
       </form>
     </Form>
   );
