@@ -18,6 +18,8 @@ export interface UserLocation {
   roleId: string;
   isPrimary: boolean;
   isCurrent: boolean;
+  isTrashed: boolean;
+  isProtected: boolean;
   user?: User;
   location?: Location;
   role?: UserRole;

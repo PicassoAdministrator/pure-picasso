@@ -1,3 +1,5 @@
+// app/(protected)/user-management/locations/[id]/layout.tsx
+
 'use client';
 
 import { useEffect, useMemo, useState } from 'react';
@@ -6,7 +8,14 @@ import { usePathname, useRouter } from 'next/navigation';
 import { useQuery } from '@tanstack/react-query';
 import { Building, MoveLeft, Activity } from 'lucide-react';
 import { apiFetch } from '@/lib/api';
-import { Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator } from '@/components/ui/breadcrumb';
+import {
+  Breadcrumb,
+  BreadcrumbItem,
+  BreadcrumbLink,
+  BreadcrumbList,
+  BreadcrumbPage,
+  BreadcrumbSeparator,
+} from '@/components/ui/breadcrumb';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Container } from '@/components/common/container';
@@ -22,7 +31,7 @@ type Props = {
 };
 
 export default function LocationLayout({ params, children }: Props) {
-  const { id } = params; // <-- THIS IS CORRECT
+  const { id } = params;
   const pathname = usePathname();
   const router = useRouter();
   const [activeTab, setActiveTab] = useState<string>('');
@@ -85,7 +94,9 @@ export default function LocationLayout({ params, children }: Props) {
                 </BreadcrumbItem>
                 <BreadcrumbSeparator />
                 <BreadcrumbItem>
-                  <BreadcrumbPage>{location?.name ?? (isLoading ? 'Loading...' : 'Location')}</BreadcrumbPage>
+                  <BreadcrumbPage>
+                    {location?.name ?? (isLoading ? 'Loading...' : 'Location')}
+                  </BreadcrumbPage>
                 </BreadcrumbItem>
               </BreadcrumbList>
             </Breadcrumb>

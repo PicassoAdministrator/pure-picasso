@@ -9,7 +9,7 @@ import { LocationProfileSchema } from '@/app/(protected)/user-management/locatio
 import authOptions from '@/app/api/auth/[...nextauth]/auth-options';
 
 // GET: Fetch location by ID with users, parent, children
-export async function GET(request: Request, { params }: { params: Promise<{ id: string }> }) {
+export async function GET(request: Request, { params }: { params: { id: string } }) {
   const session = await getServerSession(authOptions);
   if (!session) return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
 
