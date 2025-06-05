@@ -6,6 +6,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import LocationProfileEditDialog from './location-profile-edit-dialog';
 import { AvatarGroup } from '@/app/components/partials/common/avatar-group';
 import { Button } from '@/components/ui/button';
+import { Location, UserLocation } from '@/app/models/location';
 
 // --- Define/Import these types as appropriate for your app ---
 export interface LocationUser {
@@ -16,15 +17,6 @@ export interface LocationUser {
   isCurrent: boolean;
   user: { id: string; name: string; email: string };
   role: { id: string; name: string };
-}
-export interface Location {
-  isProtected: boolean | undefined;
-  id: string;
-  name: string;
-  isTrashed: boolean | undefined;
-  parent?: { id: string; name: string } | null;
-  children?: { id: string; name: string }[];
-  users?: LocationUser[];
 }
 
 interface LocationProfileProps {
@@ -45,7 +37,7 @@ export default function LocationProfile({ location, isLoading }: LocationProfile
 
   if (isLoading || !location) return <Loading />;
 
-  const users = location.users?.map((ul: LocationUser) => ({
+  const users = location.users?.map((ul: UserLocation) => ({
     path: '', // If you add avatar support
     fallback:
       ul.user?.name

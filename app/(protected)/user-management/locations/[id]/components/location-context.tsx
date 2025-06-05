@@ -1,14 +1,9 @@
 'use client';
 
 import { createContext, ReactNode, useContext } from 'react';
+import { Location } from '@/app/models/location';
 
 // Define your Location type if you have it in your models (replace with actual import)
-export interface Location {
-  id: string;
-  name: string;
-  parent?: { id: string; name: string } | null;
-  // ...other fields
-}
 
 interface LocationContextProps {
   location: Location | null;
